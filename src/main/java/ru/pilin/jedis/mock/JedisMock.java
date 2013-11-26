@@ -21,6 +21,7 @@ public class JedisMock extends Jedis {
 
     public JedisMock() {
         super("localhost");
+        this.client = new ClientMock("localhost");
     }
 
     @Override
@@ -50,7 +51,8 @@ public class JedisMock extends Jedis {
 
     @Override
     public String quit() {
-        throw new NotImplementedException();
+        log.trace(".quit()");
+        return "OK";
     }
 
     @Override
