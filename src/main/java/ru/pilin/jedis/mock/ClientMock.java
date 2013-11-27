@@ -1,6 +1,7 @@
 package ru.pilin.jedis.mock;
 
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,10 @@ public class ClientMock extends Client {
     private byte[] binaryBulkReply;
 
     private Map<ByteArrayKey, Object> store = new HashMap<>();
+
+    private String statusCodeReply;
+
+    private List<byte[]> binaryMultiBulkReply;
 
     public ClientMock(String host) {
         super(host);
@@ -864,10 +869,10 @@ public class ClientMock extends Client {
     @SuppressWarnings("unchecked")
     @Override
     public void hset(byte[] key, byte[] field, byte[] value) {
-        ByteArrayKey skey = new ByteArrayKey(key);
+        ByteArrayKey structureKey = new ByteArrayKey(key);
         ByteArrayKey fieldKey = new ByteArrayKey(field);
-        if (store.containsKey(skey)) {
-            Object structure = store.get(skey);
+        if (store.containsKey(structureKey)) {
+            Object structure = store.get(structureKey);
             if (structure instanceof Map) {
                 ((Map<ByteArrayKey, byte[]>) structure)
                     .put(fieldKey, value);
@@ -876,7 +881,7 @@ public class ClientMock extends Client {
         } else {
             Map<ByteArrayKey, byte[]> map = new HashMap<>();
             map.put(fieldKey, value);
-            store.put(skey, map);
+            store.put(structureKey, map);
             integerReply = 1L;
         }
     }
@@ -906,7 +911,26 @@ public class ClientMock extends Client {
 
     @Override
     public void hmset(byte[] key, Map<byte[], byte[]> hash) {
-        throw new NotImplementedException();
+        ByteArrayKey structureKey = new ByteArrayKey(key);
+        if (store.containsKey(structureKey)) {
+            Object structure = store.get(structureKey);
+            if (structure instanceof Map) {
+                Map<ByteArrayKey, byte[]> map = (Map<ByteArrayKey, byte[]>) structure;
+                for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
+                    map.put(new ByteArrayKey(entry.getKey()), entry.getValue());
+                }
+                statusCodeReply = "OK";
+            } else {
+                throw new IllegalArgumentException("Structure for key " + structureKey + " is not Map");
+            }
+        } else {
+            Map<ByteArrayKey, byte[]> map = new HashMap<>();
+            for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
+                map.put(new ByteArrayKey(entry.getKey()), entry.getValue());
+            }
+            store.put(structureKey, map);
+            statusCodeReply = "OK";
+        }
     }
 
     @Override
@@ -946,7 +970,19 @@ public class ClientMock extends Client {
 
     @Override
     public void hgetAll(byte[] key) {
-        throw new NotImplementedException();
+        ByteArrayKey structureKey = new ByteArrayKey(key);
+        if (store.containsKey(structureKey)) {
+            @SuppressWarnings("unchecked")
+            Map<ByteArrayKey, byte[]> map =
+                (Map<ByteArrayKey, byte[]>) store.get(structureKey);
+            binaryMultiBulkReply = new ArrayList<>(map.size() * 2);
+            for (Map.Entry<ByteArrayKey, byte[]> entry : map.entrySet()) {
+                binaryMultiBulkReply.add(entry.getKey().toArray());
+                binaryMultiBulkReply.add(entry.getValue());
+            }
+        } else {
+            binaryMultiBulkReply = null;
+        }
     }
 
     @Override
@@ -1664,7 +1700,7 @@ public class ClientMock extends Client {
 
     @Override
     protected String getStatusCodeReply() {
-        throw new NotImplementedException();
+        return statusCodeReply;
     }
 
     @Override
@@ -1689,7 +1725,7 @@ public class ClientMock extends Client {
 
     @Override
     public List<byte[]> getBinaryMultiBulkReply() {
-        throw new NotImplementedException();
+        return binaryMultiBulkReply;
     }
 
     @Override

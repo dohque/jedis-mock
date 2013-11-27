@@ -54,6 +54,11 @@ public final class ByteArrayKey {
     public String toString() {
         return "ByteArrayKey [array=" + Arrays.toString(array) + "]";
     }
-}
 
+    public byte[] toArray() {
+        byte[] result = new byte[array.length];
+        System.arraycopy(array, 0, result, 0, array.length);
+        return result;
+    }
+}
 
