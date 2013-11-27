@@ -915,6 +915,7 @@ public class ClientMock extends Client {
         if (store.containsKey(structureKey)) {
             Object structure = store.get(structureKey);
             if (structure instanceof Map) {
+                @SuppressWarnings("unchecked")
                 Map<ByteArrayKey, byte[]> map = (Map<ByteArrayKey, byte[]>) structure;
                 for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
                     map.put(new ByteArrayKey(entry.getKey()), entry.getValue());
