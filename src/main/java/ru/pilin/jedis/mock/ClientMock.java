@@ -3,8 +3,10 @@ package ru.pilin.jedis.mock;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1043,7 +1045,28 @@ public class ClientMock extends Client {
 
     @Override
     public void sadd(byte[] key, byte[]... members) {
-        throw new NotImplementedException();
+        integerReply = 0L;
+        ByteArrayKey structureKey = new ByteArrayKey(key);
+        if (store.containsKey(structureKey)) {
+            Object structure = store.get(structureKey);
+            if (structure instanceof Set) {
+                @SuppressWarnings("unchecked")
+                Set<ByteArrayKey> set = (Set<ByteArrayKey>) structure;
+                for (byte[] m : members) {
+                    if (set.add(new ByteArrayKey(m))) {
+                        integerReply = 1L;
+                    }
+                }
+            } else {
+                throw new IllegalArgumentException("Structure for key " + structureKey + " is not Set.");
+            }
+        } else {
+            Set<ByteArrayKey> set = new HashSet<>();
+            for (byte[] m : members) {
+                set.add(new ByteArrayKey(m));
+            }
+            store.put(structureKey, set);
+        }
     }
 
     @Override
@@ -1073,7 +1096,21 @@ public class ClientMock extends Client {
 
     @Override
     public void sismember(byte[] key, byte[] member) {
-        throw new NotImplementedException();
+        ByteArrayKey structureKey = new ByteArrayKey(key);
+        if (store.containsKey(structureKey)) {
+            Object structure = store.get(structureKey);
+            if (structure instanceof Set) {
+                @SuppressWarnings("unchecked")
+                Set<ByteArrayKey> set = (Set<ByteArrayKey>) structure;
+                if (set.contains(new ByteArrayKey(member))) {
+                    integerReply = 1L;
+                } else {
+                    integerReply = 0L;
+                }
+            }
+        } else {
+            integerReply = 0L;
+        }
     }
 
     @Override
