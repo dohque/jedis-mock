@@ -72,6 +72,7 @@ public class ClientMock extends Client {
 
     @Override
     public void rename(String oldkey, String newkey) {
+        throw new NotImplementedException();
     }
 
     @Override
@@ -735,7 +736,7 @@ public class ClientMock extends Client {
 
     @Override
     public void exists(byte[] key) {
-        throw new NotImplementedException();
+        integerReply = store.containsKey(new ByteArrayKey(key)) ? 1L : 0L;
     }
 
     @Override
@@ -770,7 +771,15 @@ public class ClientMock extends Client {
 
     @Override
     public void renamenx(byte[] oldkey, byte[] newkey) {
-        throw new NotImplementedException();
+        ByteArrayKey oldStructureKey = new ByteArrayKey(oldkey);
+        ByteArrayKey newStrucureKey = new ByteArrayKey(newkey);
+        if (store.containsKey(newStrucureKey)) {
+            integerReply = 0L;
+        } else {
+            store.put(newStrucureKey, store.get(oldStructureKey));
+            store.remove(oldStructureKey);
+            integerReply = 1L;
+        }
     }
 
     @Override
