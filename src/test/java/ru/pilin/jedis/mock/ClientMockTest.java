@@ -12,7 +12,7 @@ public class ClientMockTest {
         clientMock.exists("key".getBytes());
         assertEquals(0L, clientMock.getIntegerReply().longValue());
         clientMock.sadd("key".getBytes(), "1".getBytes());
-        assertEquals(0L, clientMock.getIntegerReply().longValue());
+        assertEquals(1L, clientMock.getIntegerReply().longValue());
         clientMock.renamenx("key".getBytes(), "newKey".getBytes());
         assertEquals(1L, clientMock.getIntegerReply().longValue());
         clientMock.exists("newKey".getBytes());
@@ -21,4 +21,13 @@ public class ClientMockTest {
         assertEquals(0L, clientMock.getIntegerReply().longValue());
     }
 
+    @Test
+    public void shouldImplementSMembers() throws Exception {
+        ClientMock clientMock = new ClientMock("localhost");
+        clientMock.sadd("key".getBytes(), "value".getBytes());
+        assertEquals(1L, clientMock.getIntegerReply().longValue());
+        clientMock.smembers("key".getBytes());
+        assertArrayEquals("value".getBytes(),
+            clientMock.getBinaryMultiBulkReply().get(0));
+    }
 }

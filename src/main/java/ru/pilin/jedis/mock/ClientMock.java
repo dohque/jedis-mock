@@ -1072,7 +1072,9 @@ public class ClientMock extends Client {
         } else {
             Set<ByteArrayKey> set = new HashSet<>();
             for (byte[] m : members) {
-                set.add(new ByteArrayKey(m));
+                if (set.add(new ByteArrayKey(m))) {
+                    integerReply = 1L;
+                }
             }
             store.put(structureKey, set);
         }
@@ -1080,7 +1082,22 @@ public class ClientMock extends Client {
 
     @Override
     public void smembers(byte[] key) {
-        throw new NotImplementedException();
+        ByteArrayKey structureKey = new ByteArrayKey(key);
+        if (store.containsKey(structureKey)) {
+            Object structure = store.get(structureKey);
+            if (structure instanceof Set) {
+                @SuppressWarnings("unchecked")
+                Set<ByteArrayKey> set = (Set<ByteArrayKey>) structure;
+                binaryMultiBulkReply = new ArrayList<>(set.size());
+                for (ByteArrayKey m : set) {
+                    binaryMultiBulkReply.add(m.toArray());
+                }
+            } else {
+                throw new IllegalArgumentException("Structure for key " + structureKey + " is not Set.");
+            }
+        } else {
+            throw new NotImplementedException();
+        }
     }
 
     @Override
