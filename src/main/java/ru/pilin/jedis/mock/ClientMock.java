@@ -741,7 +741,14 @@ public class ClientMock extends Client {
 
     @Override
     public void del(byte[]... keys) {
-        throw new NotImplementedException();
+        integerReply = 0L;
+        for (byte[] key : keys) {
+            ByteArrayKey structureKey = new ByteArrayKey(key);
+            if (store.containsKey(structureKey)) {
+                store.remove(structureKey);
+                integerReply++;
+            }
+        }
     }
 
     @Override

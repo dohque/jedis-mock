@@ -22,6 +22,15 @@ public class ClientMockTest {
     }
 
     @Test
+    public void shouldImplementDel() throws Exception {
+        ClientMock clientMock = new ClientMock("localhost");
+        clientMock.sadd("key".getBytes(), "value".getBytes());
+        assertEquals(1L, clientMock.getIntegerReply().longValue());
+        clientMock.del("key".getBytes());
+        assertEquals(1L, clientMock.getIntegerReply().longValue());
+    }
+
+    @Test
     public void shouldImplementSMembers() throws Exception {
         ClientMock clientMock = new ClientMock("localhost");
         clientMock.sadd("key".getBytes(), "value".getBytes());
