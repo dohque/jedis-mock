@@ -721,12 +721,25 @@ public class ClientMock extends Client {
 
     @Override
     public void set(byte[] key, byte[] value) {
-        throw new NotImplementedException();
+        ByteArrayKey structureKey = new ByteArrayKey(key);
+        store.put(structureKey, value);
+        statusCodeReply = "OK";
     }
 
     @Override
     public void get(byte[] key) {
-        throw new NotImplementedException();
+        ByteArrayKey structureKey = new ByteArrayKey(key);
+        if (store.containsKey(structureKey)) {
+            Object value = store.get(structureKey);
+            if (value instanceof byte[]) {
+                binaryBulkReply = (byte[]) value;
+            } else {
+                throw new IllegalArgumentException(
+                    "Structure for key " + structureKey + " is not byte[].");
+            }
+        } else {
+            throw new NotImplementedException();
+        }
     }
 
     @Override

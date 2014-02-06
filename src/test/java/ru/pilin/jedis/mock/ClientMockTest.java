@@ -31,6 +31,15 @@ public class ClientMockTest {
     }
 
     @Test
+    public void shouldSetGetValue() throws Exception {
+        ClientMock clientMock = new ClientMock("localhost");
+        clientMock.set("key".getBytes(), "value".getBytes());
+        assertEquals("OK", clientMock.getStatusCodeReply());
+        clientMock.get("key".getBytes());
+        assertArrayEquals("value".getBytes(), clientMock.getBinaryBulkReply());
+    }
+
+    @Test
     public void shouldImplementSMembers() throws Exception {
         ClientMock clientMock = new ClientMock("localhost");
         clientMock.sadd("key".getBytes(), "value".getBytes());
